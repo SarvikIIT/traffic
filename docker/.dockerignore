@@ -1,0 +1,15 @@
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.git
+.gitignore
+*.md
+.env
+data/raw/*
+data/processed/*
+models/detection/*.pt
+models/prediction/*.pt
+models/rl_agents/*.zip
+logs/*
+results/*
+notebooks/*.ipynb

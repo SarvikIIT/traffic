@@ -1,0 +1,19 @@
+# Spatial-Temporal GCN Configuration
+model_type: "stgcn"
+in_channels: 8
+hidden_channels: 64
+out_channels: 1
+num_layers: 3
+temporal_window: 12
+dropout: 0.1
+batch_size: 32
+epochs: 200
+patience: 30
+learning_rate: 0.001
+weight_decay: 0.0001
+scheduler: "cosine"
+loss: "huber"        # huber / mse / mae
+metrics: ["mae", "rmse", "mape"]
+train_ratio: 0.7
+val_ratio: 0.1
+test_ratio: 0.2

@@ -1,0 +1,102 @@
+version: "3.9"
+
+services:
+  # ─── API server ──────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: uvicorn services.api:app --host 0.0.0.0 --port 8000 --workers 2
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../data:/app/data
+      - ../models:/app/models
+      - ../logs:/app/logs
+    environment:
+      - TRAFFIC_CONFIG=/app/config/config.yaml
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # ─── Streamlit dashboard ──────────────────────────────────────────────────
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: streamlit run services/dashboard.py --server.port 8501 --server.headless true
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../data:/app/data
+    environment:
+      - TRAFFIC_CONFIG=/app/config/config.yaml
+    restart: unless-stopped
+
+  # ─── Video processor microservice ────────────────────────────────────────
+  video_processor:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: python services/video_processor.py
+    volumes:
+      - ../data:/app/data
+      - ../models:/app/models
+    environment:
+      - TRAFFIC_CONFIG=/app/config/config.yaml
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # ─── Traffic predictor microservice ──────────────────────────────────────
+  traffic_predictor:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: python services/traffic_predictor.py
+    volumes:
+      - ../data:/app/data
+      - ../models:/app/models
+    environment:
+      - TRAFFIC_CONFIG=/app/config/config.yaml
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # ─── Signal optimizer microservice ───────────────────────────────────────
+  signal_optimizer:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: python services/signal_optimizer.py
+    volumes:
+      - ../data:/app/data
+      - ../models:/app/models
+    environment:
+      - TRAFFIC_CONFIG=/app/config/config.yaml
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # ─── PostgreSQL (optional; switch database.type=postgresql in config) ─────
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: traffic_twin
+      POSTGRES_USER: traffic_user
+      POSTGRES_PASSWORD: traffic_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  # ─── Redis (optional message queue) ──────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,0 +1,75 @@
+# Core Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# Graph Neural Networks
+torch-geometric>=2.3.0
+torch-scatter>=2.1.1
+torch-sparse>=0.6.17
+
+# Computer Vision
+opencv-python>=4.8.0
+ultralytics>=8.0.0  # YOLOv8
+albumentations>=1.3.0
+Pillow>=10.0.0
+
+# Reinforcement Learning
+stable-baselines3>=2.0.0
+gymnasium>=0.28.0
+sb3-contrib>=2.0.0
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+scikit-learn>=1.3.0
+
+# Video Processing
+ffmpeg-python>=0.2.0
+imageio>=2.31.0
+imageio-ffmpeg>=0.4.8
+
+# API and Web Framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.6
+redis>=4.6.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+streamlit>=1.25.0
+dash>=2.11.0
+
+# Utilities
+pyyaml>=6.0
+python-dotenv>=1.0.0
+tqdm>=4.65.0
+loguru>=0.7.0
+click>=8.1.0
+
+# Monitoring and Logging
+tensorboard>=2.13.0
+wandb>=0.15.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# Code Quality
+black>=23.0.0
+flake8>=6.0.0
+isort>=5.12.0
+mypy>=1.4.0
+
+# Deployment
+docker>=6.1.0
+gunicorn>=21.0.0

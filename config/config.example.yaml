@@ -1,0 +1,134 @@
+# City-Scale Traffic Digital Twin - Main Configuration
+
+# ─── Video Processing ───────────────────────────────────────────────────────
+video_processing:
+  resolution: [1920, 1080]
+  fps: 30
+  detection_threshold: 0.7
+  nms_threshold: 0.45
+  input_size: [640, 640]        # YOLO input resolution
+  save_annotated: true
+  max_queue_size: 100
+
+# ─── Vehicle Detection ──────────────────────────────────────────────────────
+detection:
+  model: "yolov8n"              # yolov8n / yolov8s / yolov8m / yolov8l
+  weights_path: "models/detection/best.pt"
+  pretrained: true              # use COCO pretrained weights
+  confidence: 0.5
+  iou_threshold: 0.45
+  vehicle_classes: [2, 3, 5, 7] # COCO: car=2, motorcycle=3, bus=5, truck=7
+  device: "auto"                # auto / cpu / cuda / mps
+
+# ─── Multi-Object Tracking ──────────────────────────────────────────────────
+tracking:
+  algorithm: "bytetrack"        # bytetrack / sort / deepsort
+  max_age: 30                   # frames before track is deleted
+  min_hits: 3                   # frames needed to confirm a track
+  iou_threshold: 0.3
+  high_thresh: 0.6
+  low_thresh: 0.1
+  match_thresh: 0.8
+  counting_line_ratio: 0.6      # fraction of frame height for counting line
+
+# ─── Traffic Graph ──────────────────────────────────────────────────────────
+graph_network:
+  num_intersections: 50
+  time_window: 60               # minutes of history
+  prediction_horizon: 30        # minutes ahead
+  node_feature_dim: 8           # density, flow, queue, speed, hour, day, phase, capacity
+  edge_feature_dim: 4           # distance, road_type, lanes, speed_limit
+  update_interval: 60           # seconds between graph updates
+
+# ─── GNN Model ──────────────────────────────────────────────────────────────
+gnn:
+  model_type: "stgcn"           # stgcn / gcn / gat
+  in_channels: 8
+  hidden_channels: 64
+  out_channels: 1
+  num_layers: 3
+  temporal_window: 12           # 12 time-steps (e.g. 12 × 5-min = 1 hour)
+  dropout: 0.1
+  weights_path: "models/prediction/stgcn_best.pt"
+
+# ─── Reinforcement Learning ─────────────────────────────────────────────────
+reinforcement_learning:
+  algorithm: "ppo"              # ppo / a2c / dqn
+  learning_rate: 0.0003
+  gamma: 0.99
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  clip_range: 0.2
+  ent_coef: 0.01
+  reward_function: "wait_time_reduction"
+  total_timesteps: 100000
+  weights_path: "models/rl_agents/ppo_traffic.zip"
+
+  # Signal phase configuration
+  phases: ["NS_GREEN", "NS_YELLOW", "EW_GREEN", "EW_YELLOW"]
+  min_green_time: 10            # seconds
+  max_green_time: 60            # seconds
+  yellow_time: 3                # fixed yellow phase
+  max_cycle_length: 120         # seconds
+
+# ─── Traffic Simulation (RL environment) ────────────────────────────────────
+simulation:
+  num_intersections: 4
+  max_vehicles: 200
+  arrival_rate: 0.3             # Poisson lambda (vehicles/second)
+  sim_step: 1.0                 # seconds per simulation step
+  max_episode_steps: 3600       # 1 hour per episode
+
+# ─── Database ───────────────────────────────────────────────────────────────
+database:
+  type: "sqlite"                # sqlite (default) or postgresql
+  sqlite_path: "data/traffic.db"
+  postgresql:
+    host: "localhost"
+    port: 5432
+    name: "traffic_twin"
+    user: "traffic_user"
+    password: ""                # set via env var DATABASE_PASSWORD
+
+# ─── Redis (optional) ───────────────────────────────────────────────────────
+redis:
+  enabled: false
+  host: "localhost"
+  port: 6379
+  db: 0
+  stream_key: "traffic:frames"
+
+# ─── API ────────────────────────────────────────────────────────────────────
+api:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  workers: 4
+  api_prefix: "/api/v1"
+
+# ─── Dashboard ──────────────────────────────────────────────────────────────
+dashboard:
+  host: "localhost"
+  port: 8501
+  theme: "dark"
+  refresh_interval: 5           # seconds
+  map_center: [40.7128, -74.0060]  # default: New York City
+  map_zoom: 13
+
+# ─── System ─────────────────────────────────────────────────────────────────
+system:
+  num_workers: 4
+  batch_size: 16
+  gpu_id: 0
+  log_level: "INFO"
+  log_dir: "logs"
+  checkpoint_dir: "models"
+  results_dir: "results"
+
+# ─── Experiment Tracking ────────────────────────────────────────────────────
+tracking_platform:
+  use_wandb: false
+  wandb_project: "traffic-digital-twin"
+  use_tensorboard: true
+  tensorboard_dir: "runs"
