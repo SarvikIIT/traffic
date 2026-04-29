@@ -1,4 +1,4 @@
-from .traffic_env import TrafficSignalEnv
+from .env import TrafficSignalEnv
 from .reward import compute_reward
 from .agent import TrafficSignalAgent
 

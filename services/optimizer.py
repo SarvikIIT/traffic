@@ -8,7 +8,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.rl.agent import TrafficSignalAgent
-from src.rl.traffic_env import TrafficSignalEnv
+from src.rl.env import TrafficSignalEnv
 from src.utils.config import load_config
 from src.utils.db import DatabaseManager, TrafficReading, SignalState, get_db
 from src.utils.logger import setup_logging, get_logger

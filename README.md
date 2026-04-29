@@ -85,67 +85,67 @@ API: http://localhost:8000 | Dashboard: http://localhost:8501
 python main.py --init-db --generate-graph
 ```
 
-Start specific services only:
+Start the dashboard only:
 ```bash
-python main.py --services api dashboard
+python main.py --services dashboard
 ```
 
 ### Process a video file
 
 ```bash
-python inference/process_video.py --input data/video/sample.mp4 --output results/
+python inference/process.py --input data/video/sample.mp4 --output results/
 ```
 
 ### Run traffic prediction
 
 ```bash
-python inference/predict_traffic.py --demo
-python inference/predict_traffic.py --graph data/graphs/city_graph.json --model models/prediction/stgcn_best.pt --horizon 30
+python inference/predict.py --demo
+python inference/predict.py --graph data/graphs/city_graph.json --model models/prediction/stgcn_best.pt --horizon 30
 ```
 
 ### Database setup
 
 ```bash
-python scripts/init_database.py --seed --nodes 9
+python scripts/setup_db.py --seed --nodes 9
 ```
 
 ### Generate city graph
 
 ```bash
 # Grid graph
-python scripts/generate_graph.py --rows 5 --cols 5
+python scripts/make_graph.py --rows 5 --cols 5
 
 # Varanasi Lanka-area graph (real intersections)
-python scripts/generate_varanasi_graph.py
+python scripts/varanasi_graph.py
 ```
 
 ### Delhi dataset scripts
 
 ```bash
 # Convert Delhi CSV data → database readings
-python scripts/convert_delhi_dataset.py
+python scripts/convert_delhi.py
 
 # Generate Delhi intersection graph
-python scripts/generate_delhi_graph.py
+python scripts/delhi_graph.py
 ```
 
 ## Training Models
 
 **Train the GNN prediction model:**
 ```bash
-python train/train_gnn.py --synthetic --nodes 25 --epochs 200
+python train/gnn.py --synthetic --nodes 25 --epochs 200
 # or with real features
-python train/train_gnn.py --graph data/graphs/city_graph.json --epochs 200
+python train/gnn.py --graph data/graphs/city_graph.json --epochs 200
 ```
 
 **Train the RL signal agent:**
 ```bash
-python train/train_rl_agent.py --timesteps 100000 --eval
+python train/rl.py --timesteps 100000 --eval
 ```
 
 **Train vehicle detector:**
 ```bash
-python train/train_detector.py --epochs 100
+python train/detector.py --epochs 100
 ```
 
 ## Running Tests
@@ -163,22 +163,38 @@ pytest tests/ -v --cov=src --cov-report=html
 traffic/
 ├── config/                  # YAML configuration
 ├── data/
-│   ├── graphs/              # City graph JSON files
+│   ├── graphs/              # City graph JSON files (varanasi + delhi)
 │   └── DelhiTrafficDensityDataset/  # (not in repo, shared separately)
-├── inference/               # Prediction and video processing scripts
+├── inference/
+│   ├── predict.py           # Run GNN traffic prediction
+│   └── process.py           # Process a video file
 ├── models/                  # Trained model weights (not in repo)
-├── scripts/                 # Utility scripts (DB init, graph gen, dataset tools)
-├── services/                # FastAPI, Streamlit, video processor, predictor, RL optimizer
+├── scripts/
+│   ├── setup_db.py          # Init/seed database
+│   ├── make_graph.py        # Generate grid city graph
+│   ├── varanasi_graph.py    # Varanasi Lanka-area graph
+│   ├── delhi_graph.py       # Delhi intersection graph
+│   ├── convert_delhi.py     # Convert Delhi CSV data to DB
+│   ├── features.py          # Extract features from video results
+│   └── benchmark.py         # Benchmark all three models
+├── services/
+│   ├── dashboard.py         # Streamlit dashboard
+│   ├── video.py             # Video processing worker
+│   ├── predictor.py         # STGCN inference service
+│   └── optimizer.py         # RL signal optimizer service
 ├── src/
-│   ├── detection/           # YOLOv8 wrapper
-│   ├── graph/               # STGCN model + dataset + graph builder
-│   ├── rl/                  # PPO environment + agent + reward
+│   ├── detection/           # YOLOv8 wrapper + detector
+│   ├── graph/               # STGCN (stgcn.py), dataset, graph builder
+│   ├── rl/                  # PPO env (env.py), agent, reward
 │   ├── tracking/            # Kalman tracker
 │   ├── utils/               # DB, config, logger, video utils
-│   └── visualization/       # Plotly/matplotlib helpers
-├── tests/                   # pytest test suite
-├── train/                   # Training scripts for all three models
-├── app.py                   # Quick-start entry point
+│   └── visualization/       # viz.py, mapview.py
+├── tests/                   # pytest test suite (24 tests)
+├── train/
+│   ├── gnn.py               # Train STGCN
+│   ├── rl.py                # Train PPO agent
+│   └── detector.py          # Train YOLOv8
+├── app.py                   # Quick-start (demo mode)
 └── main.py                  # Full pipeline orchestrator
 ```
 

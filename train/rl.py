@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.rl.traffic_env import TrafficSignalEnv
+from src.rl.env import TrafficSignalEnv
 from src.rl.agent import TrafficSignalAgent
 from src.utils.config import load_config
 from src.utils.logger import setup_logging, get_logger

@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 
 import numpy as np
 
-from .traffic_env import TrafficSignalEnv
+from .env import TrafficSignalEnv
 
 class TrafficSignalAgent:
 

@@ -21,19 +21,18 @@ Video Feeds → Detection → Graph Construction → GNN Prediction → RL Optim
 ### 3. Traffic Graph (`src/graph/`)
 - **TrafficGraphBuilder** – NetworkX DiGraph; nodes=intersections, edges=roads
 - **TrafficGraphDataset** – sliding-window PyTorch dataset (T_in, N, F)
-- **STGCN** – Spatial-Temporal GCN with GLU temporal convolutions
+- **STGCN** (`stgcn.py`) – Spatial-Temporal GCN with GLU temporal convolutions
 
 ### 4. Reinforcement Learning (`src/rl/`)
-- **TrafficSignalEnv** – Gymnasium env; simulates Poisson vehicle arrivals
+- **TrafficSignalEnv** (`env.py`) – Gymnasium env; simulates Poisson vehicle arrivals
 - **TrafficSignalAgent** – Stable-Baselines3 PPO/A2C/DQN wrapper
 - **Reward** – composite: -Δwait −Δqueue +throughput −switch_penalty
 
 ### 5. Services
-- **api.py** – FastAPI REST API (uvicorn)
 - **dashboard.py** – Streamlit interactive dashboard
-- **video_processor.py** – job-queue worker for video analysis
-- **traffic_predictor.py** – periodic STGCN inference → DB
-- **signal_optimizer.py** – periodic RL-based signal recommendations → DB
+- **video.py** – job-queue worker for video analysis
+- **predictor.py** – periodic STGCN inference → DB
+- **optimizer.py** – periodic RL-based signal recommendations → DB
 
 ### 6. Persistence (`src/utils/db.py`)
 - SQLAlchemy ORM; SQLite by default, PostgreSQL for production
@@ -52,5 +51,5 @@ VideoCapture → VehicleDetector → MultiObjectTracker
                      ↓
              TrafficSignalAgent.predict()  →  SignalState (DB)
                      ↓
-             FastAPI / Streamlit Dashboard
+             Streamlit Dashboard
 ```

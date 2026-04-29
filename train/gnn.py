@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.graph.dataset import TrafficGraphDataset
-from src.graph.prediction_model import STGCN
+from src.graph.stgcn import STGCN
 from src.graph.builder import TrafficGraphBuilder
 from src.utils.config import load_config
 from src.utils.logger import setup_logging, get_logger

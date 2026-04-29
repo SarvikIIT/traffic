@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.detection.model import DetectionModel
 from src.detection.detector import VehicleDetector
 from src.tracking.tracker import MultiObjectTracker
-from src.visualization.detection_viz import (
+from src.visualization.viz import (
     draw_detections, draw_tracks, draw_heatmap, draw_stats_overlay
 )
 from src.utils.video_utils import VideoWriter, get_video_properties

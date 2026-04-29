@@ -12,17 +12,15 @@ from src.utils.config import load_config
 from src.utils.logger import setup_logging, get_logger
 
 
-ALL_SERVICES = ["api", "video_processor", "traffic_predictor", "signal_optimizer", "dashboard"]
+ALL_SERVICES = ["video", "predictor", "optimizer", "dashboard"]
 
 COMMANDS = {
-    "api": [sys.executable, "-m", "uvicorn", "services.api:app",
-            "--host", "0.0.0.0", "--port", "8000", "--reload"],
-    "video_processor":   [sys.executable, "services/video_processor.py"],
-    "traffic_predictor": [sys.executable, "services/traffic_predictor.py"],
-    "signal_optimizer":  [sys.executable, "services/signal_optimizer.py"],
-    "dashboard":         [sys.executable, "-m", "streamlit", "run",
-                          "services/dashboard.py", "--server.port", "8501",
-                          "--server.headless", "true"],
+    "video":     [sys.executable, "services/video.py"],
+    "predictor": [sys.executable, "services/predictor.py"],
+    "optimizer": [sys.executable, "services/optimizer.py"],
+    "dashboard": [sys.executable, "-m", "streamlit", "run",
+                  "services/dashboard.py", "--server.port", "8501",
+                  "--server.headless", "true"],
 }
 
 
@@ -69,7 +67,7 @@ def main():
     log.info("=" * 60)
 
     if args.init_db or args.seed_db:
-        cmd = [sys.executable, "scripts/init_database.py"]
+        cmd = [sys.executable, "scripts/setup_db.py"]
         if args.seed_db:
             cmd.append("--seed")
         log.info("Initialising database...")
@@ -83,7 +81,7 @@ def main():
         graph_path = "data/graphs/city_graph.json"
         if not Path(graph_path).exists():
             log.info("Generating city graph...")
-            subprocess.run([sys.executable, "scripts/generate_graph.py"], check=True)
+            subprocess.run([sys.executable, "scripts/make_graph.py"], check=True)
         else:
             log.info(f"Graph already exists: {graph_path}")
 
@@ -99,16 +97,13 @@ def main():
             continue
         proc = run_subprocess(svc, COMMANDS[svc], log)
         procs[svc] = proc
-        time.sleep(1)  # stagger startup
+        time.sleep(1)
 
     if not procs:
         log.error("No services started.")
         sys.exit(1)
 
     log.info("-" * 60)
-    if "api" in procs:
-        log.info("API:       http://localhost:8000")
-        log.info("API Docs:  http://localhost:8000/docs")
     if "dashboard" in procs:
         log.info("Dashboard: http://localhost:8501")
     log.info("-" * 60)

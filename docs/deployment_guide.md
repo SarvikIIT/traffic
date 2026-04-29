@@ -11,13 +11,13 @@ source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # 3. Initialise database with demo data
-python scripts/init_database.py --seed --nodes 9
+python scripts/setup_db.py --seed --nodes 9
 
 # 4. Generate city graph
-python scripts/generate_graph.py --rows 3 --cols 3
+python scripts/make_graph.py --rows 3 --cols 3
 
-# 5. Start all services
-python main.py --init-db
+# 5. Start dashboard (+ background services)
+python main.py
 
 # Or quick demo mode:
 python app.py --demo
@@ -27,23 +27,13 @@ python app.py --demo
 
 ```bash
 # Train vehicle detector (uses COCO128 demo by default)
-python train/train_detector.py --epochs 100
+python train/detector.py --epochs 100
 
 # Train GNN (synthetic data)
-python train/train_gnn.py --synthetic --nodes 25 --epochs 200
+python train/gnn.py --synthetic --nodes 25 --epochs 200
 
 # Train RL agent
-python train/train_rl_agent.py --timesteps 100000 --eval
-```
-
-## Docker Deployment
-
-```bash
-cd docker
-docker-compose up -d
-
-# Scale video processor workers
-docker-compose up -d --scale video_processor=3
+python train/rl.py --timesteps 100000 --eval
 ```
 
 ## Running Tests
@@ -64,6 +54,4 @@ pytest tests/ -v --cov=src --cov-report=html
 
 | Service | URL |
 |---------|-----|
-| API | http://localhost:8000 |
-| API Docs | http://localhost:8000/docs |
 | Dashboard | http://localhost:8501 |

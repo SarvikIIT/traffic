@@ -8,7 +8,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.graph.prediction_model import STGCN, TrafficPredictor
+from src.graph.stgcn import STGCN, TrafficPredictor
 from src.graph.builder import TrafficGraphBuilder
 from src.utils.config import load_config
 from src.utils.logger import setup_logging, get_logger
@@ -74,7 +74,7 @@ def main():
         return
 
     if not Path(args.graph).exists():
-        log.error(f"Graph file not found: {args.graph}. Run scripts/generate_graph.py first.")
+        log.error(f"Graph file not found: {args.graph}. Run scripts/make_graph.py first.")
         sys.exit(1)
     builder = TrafficGraphBuilder.load(args.graph)
     num_nodes = builder.num_nodes
@@ -83,7 +83,7 @@ def main():
     log.info(f"Loaded graph: {num_nodes} nodes")
 
     if not Path(args.model).exists():
-        log.error(f"Model not found: {args.model}. Train first with train/train_gnn.py")
+        log.error(f"Model not found: {args.model}. Train first with train/gnn.py")
         sys.exit(1)
     predictor = TrafficPredictor.from_checkpoint(
         args.model,

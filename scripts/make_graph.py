@@ -43,7 +43,7 @@ def main():
 
     if args.visualize:
         try:
-            from src.visualization.traffic_map import TrafficNetworkVisualizer
+            from src.visualization.mapview import TrafficNetworkVisualizer
             viz = TrafficNetworkVisualizer(builder)
             viz.matplotlib_map()
         except Exception as e:

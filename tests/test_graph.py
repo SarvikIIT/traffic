@@ -4,7 +4,7 @@ import torch
 
 from src.graph.builder import TrafficGraphBuilder, Intersection, Road
 from src.graph.dataset import TrafficGraphDataset
-from src.graph.prediction_model import STGCN, GraphConvLayer
+from src.graph.stgcn import STGCN, GraphConvLayer
 
 
 def test_grid_city_nodes(grid_builder):

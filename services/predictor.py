@@ -9,7 +9,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.graph.builder import TrafficGraphBuilder
-from src.graph.prediction_model import TrafficPredictor
+from src.graph.stgcn import TrafficPredictor
 from src.utils.config import load_config
 from src.utils.db import DatabaseManager, TrafficReading, TrafficPrediction, get_db
 from src.utils.logger import setup_logging, get_logger

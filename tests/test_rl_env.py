@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import gymnasium as gym
 
-from src.rl.traffic_env import TrafficSignalEnv
+from src.rl.env import TrafficSignalEnv
 from src.rl.reward import IntersectionState, compute_reward
 
 
