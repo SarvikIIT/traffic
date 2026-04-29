@@ -65,7 +65,7 @@ cp config/config.example.yaml config/config.yaml
 The fastest way to see everything running:
 
 ```bash
-# Initialise DB + generate a 3×3 grid graph + start API and dashboard
+# Initialise DB + generate a 3×3 grid graph + start the dashboard
 python app.py --demo
 ```
 ## Usage
