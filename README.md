@@ -12,7 +12,7 @@ The pipeline has four main stages:
 3. **Congestion Prediction** — A Spatial-Temporal GCN (STGCN) predicts traffic flow across intersections
 4. **Signal Optimization** — A PPO reinforcement learning agent recommends signal timing adjustments
 
-All results are exposed via a FastAPI REST API and a Streamlit dashboard.
+All results are exposed via a Streamlit dashboard.
 
 ## System Architecture
 
@@ -27,7 +27,7 @@ Traffic Cameras → YOLOv8 Detection → Kalman Tracker
                          ↓
             PPO RL Agent      →  SignalState (DB)
                          ↓
-              FastAPI + Streamlit Dashboard
+                Streamlit Dashboard
 ```
 
 ## Tech Stack
@@ -39,7 +39,7 @@ Traffic Cameras → YOLOv8 Detection → Kalman Tracker
 | Graph | NetworkX, PyTorch Geometric |
 | Prediction | PyTorch — custom STGCN |
 | RL | Stable-Baselines3 (PPO/A2C/DQN), Gymnasium |
-| Backend | FastAPI, SQLAlchemy, SQLite |
+| Backend | SQLAlchemy, SQLite |
 | Dashboard | Streamlit, Plotly |
 
 ## Dataset
@@ -206,23 +206,6 @@ traffic/
 | STGCN (30-min) | RMSE | 0.55 |
 | PPO RL Agent | Wait time reduction | 33.9% |
 | YOLOv8n | Avg FPS (CPU) | ~12 |
-
-## API Endpoints
-
-Base URL: `http://localhost:8000/api/v1`
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | System status |
-| GET | `/traffic/density?intersection_id=X` | Latest readings |
-| POST | `/traffic/update` | Insert new reading |
-| GET | `/traffic/predict?intersection_id=X&horizon=30` | GNN forecast |
-| GET | `/traffic/network` | All intersections summary |
-| POST | `/signals/optimize` | RL signal recommendations |
-| POST | `/jobs/video` | Submit video for processing |
-| GET | `/jobs/{job_id}` | Job status |
-
-Full interactive docs at `/docs` (Swagger UI).
 
 ## License
 
