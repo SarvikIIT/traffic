@@ -188,7 +188,6 @@ traffic/
 ├── app.py                   # Quick-start (demo mode)
 └── main.py                  # Full pipeline orchestrator
 ```
-
 ## Model Results
 
 | Model | Metric | Value |
