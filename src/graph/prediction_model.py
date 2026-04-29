@@ -7,7 +7,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class GraphConvLayer(nn.Module):
-
     def __init__(self, in_features: int, out_features: int, bias: bool = True):
         super().__init__()
         self.weight = nn.Parameter(torch.empty(in_features, out_features))
@@ -22,7 +21,6 @@ class GraphConvLayer(nn.Module):
         return out
 
 class STConvBlock(nn.Module):
-
     def __init__(
         self,
         in_channels: int,
@@ -75,7 +73,6 @@ class STConvBlock(nn.Module):
         return F.relu(h + residual)
 
 class STGCN(nn.Module):
-
     def __init__(
         self,
         num_nodes: int,
@@ -104,10 +101,11 @@ class STGCN(nn.Module):
             for i in range(num_layers)
         ])
 
+        self.temporal_pool = nn.AdaptiveAvgPool2d((None, 1))
         self.output_proj = nn.Sequential(
             nn.Conv2d(hidden_channels, hidden_channels // 2, (1, 1)),
             nn.ReLU(),
-            nn.Conv2d(hidden_channels // 2, pred_len * out_channels, (1, seq_len)),
+            nn.Conv2d(hidden_channels // 2, pred_len * out_channels, (1, 1)),
         )
 
     def _normalize_adj(self, adj: torch.Tensor) -> torch.Tensor:
@@ -129,12 +127,12 @@ class STGCN(nn.Module):
         for block in self.st_blocks:
             h = block(h, adj_norm)
 
+        h = self.temporal_pool(h)
         out = self.output_proj(h)
         out = out.squeeze(-1)
         return out
 
 class TrafficPredictor:
-
     def __init__(self, model: STGCN, device: str = "cpu"):
         self.model = model.to(device)
         self.device = device
@@ -152,7 +150,8 @@ class TrafficPredictor:
         return out.squeeze(0).cpu()
 
     def save(self, path: str) -> None:
-        import os; os.makedirs(os.path.dirname(path), exist_ok=True)
+        from pathlib import Path
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
         torch.save({"state_dict": self.model.state_dict()}, path)
 
     @classmethod

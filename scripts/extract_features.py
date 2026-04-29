@@ -3,7 +3,7 @@ import sys
 import glob
 import numpy as np
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -65,7 +65,7 @@ def results_to_features(results: dict, num_nodes: int = 9) -> np.ndarray:
 
 def insert_to_db(results: dict, db: DatabaseManager, log) -> int:
     total = 0
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     with db.session() as s:
         for video_name, data in results.items():
             frames = data.get("frames", [])

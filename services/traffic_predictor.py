@@ -54,7 +54,7 @@ def run_service():
     db  = get_db(f"sqlite:///{cfg.get('database.sqlite_path', 'data/traffic.db')}")
     db.create_tables()
 
-    graph_path = cfg.get("graph_network", {}).get("graph_path", "data/graphs/city_graph.json")
+    graph_path = cfg.get("graph_network.graph_path", "data/graphs/city_graph.json")
     model_path = cfg.get("gnn.weights_path", "models/prediction/stgcn_best.pt")
     interval   = cfg.get("graph_network.update_interval", 60)
 

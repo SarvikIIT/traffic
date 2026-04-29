@@ -1,6 +1,6 @@
 import argparse
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import random
 
@@ -32,7 +32,7 @@ def parse_args():
 def seed_data(db: DatabaseManager, num_nodes: int = 9, days: int = 7, log=None) -> None:
     node_ids = [f"INT_{i:03d}" for i in range(num_nodes)]
     phases   = ["NS_GREEN", "EW_GREEN"]
-    now      = datetime.utcnow()
+    now      = datetime.now(timezone.utc)
     interval = timedelta(minutes=5)
 
     total_readings = 0

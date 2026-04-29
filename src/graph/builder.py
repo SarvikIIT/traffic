@@ -112,7 +112,7 @@ class TrafficGraphBuilder:
 
     def save(self, path: str) -> None:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        data = nx.node_link_data(self._G)
+        data = nx.node_link_data(self._G, edges="links")
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
 
@@ -121,7 +121,7 @@ class TrafficGraphBuilder:
         with open(path, "r") as f:
             data = json.load(f)
         builder = cls()
-        builder._G = nx.node_link_graph(data, directed=True, multigraph=False)
+        builder._G = nx.node_link_graph(data, directed=True, multigraph=False, edges="links")
         return builder
 
     @classmethod

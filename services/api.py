@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import sys
 import uuid
-from datetime import datetime
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -16,12 +17,30 @@ from src.utils.config import load_config
 from src.utils.db import DatabaseManager, TrafficReading, SignalState, TrafficPrediction, VideoJob
 from src.utils.logger import setup_logging, get_logger
 
+_cfg = None
+_db: Optional[DatabaseManager] = None
+_log = None
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    global _cfg, _db, _log
+    if _db is None:
+        _cfg = load_config()
+        setup_logging(_cfg.get("system.log_level", "INFO"), _cfg.get("system.log_dir", "logs"))
+        _log = get_logger("api")
+        db_url = _cfg.get("database.sqlite_path", "data/traffic.db")
+        _db = DatabaseManager(f"sqlite:///{db_url}")
+        _db.create_tables()
+        _log.info("API started – database ready.")
+    yield
+
 app = FastAPI(
     title="Traffic Digital Twin API",
     description="City-Scale Traffic Management System",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -29,21 +48,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-_cfg = None
-_db: Optional[DatabaseManager] = None
-_log = None
-
-@app.on_event("startup")
-async def startup():
-    global _cfg, _db, _log
-    _cfg = load_config()
-    setup_logging(_cfg.get("system.log_level", "INFO"), _cfg.get("system.log_dir", "logs"))
-    _log = get_logger("api")
-    db_url = _cfg.get("database.sqlite_path", "data/traffic.db")
-    _db = DatabaseManager(f"sqlite:///{db_url}")
-    _db.create_tables()
-    _log.info("API started – database ready.")
 
 class TrafficReadingIn(BaseModel):
     intersection_id: str
@@ -86,7 +90,7 @@ class PredictionOut(BaseModel):
 async def health_check() -> Dict[str, Any]:
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": "1.0.0",
     }
 
@@ -158,7 +162,7 @@ async def predict_traffic(
             predicted_flow=None,
             predicted_queue=None,
             confidence=None,
-            created_at=datetime.utcnow().isoformat(),
+            created_at=datetime.now(timezone.utc).isoformat(),
         )
     return PredictionOut(
         intersection_id=pred.intersection_id,
@@ -193,7 +197,7 @@ async def get_network_status() -> Dict[str, Any]:
         )
     return {
         "total_intersections": len(rows),
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "intersections": [
             {
                 "id": r.intersection_id,

@@ -25,7 +25,7 @@ class TrafficReading(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     intersection_id = Column(String(32), nullable=False, index=True)
     camera_id = Column(String(32), nullable=False)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), index=True)
     vehicle_count = Column(Integer, default=0)
     density = Column(Float, default=0.0)
     avg_speed = Column(Float, default=0.0)
@@ -39,7 +39,7 @@ class SignalState(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     intersection_id = Column(String(32), nullable=False, index=True)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), index=True)
     phase = Column(String(16), nullable=False)
     green_duration = Column(Float, nullable=False)
     cycle_length = Column(Float, nullable=False)
@@ -51,7 +51,7 @@ class TrafficPrediction(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     intersection_id = Column(String(32), nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
     horizon_minutes = Column(Integer, nullable=False)
     predicted_density = Column(Float)
     predicted_flow = Column(Float)
@@ -67,7 +67,7 @@ class VideoJob(Base):
     input_path = Column(Text, nullable=False)
     intersection_id = Column(String(32))
     status = Column(String(16), default="pending")
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
     completed_at = Column(DateTime, nullable=True)
     error_message = Column(Text, nullable=True)
     total_frames = Column(Integer, default=0)
@@ -98,9 +98,11 @@ class DatabaseManager:
             s.close()
 
 _db: Optional[DatabaseManager] = None
+_db_url: Optional[str] = None
 
 def get_db(db_url: Optional[str] = None) -> DatabaseManager:
-    global _db
-    if _db is None:
+    global _db, _db_url
+    if _db is None or (db_url is not None and db_url != _db_url):
+        _db_url = db_url
         _db = DatabaseManager(db_url)
     return _db

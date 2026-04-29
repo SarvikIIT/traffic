@@ -14,7 +14,7 @@ from src.utils.video_utils import VideoWriter
 
 import cv2
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timezone
 
 def process_job(job: VideoJob, detector: VehicleDetector,
                 tracker: MultiObjectTracker, db: DatabaseManager,
@@ -24,7 +24,7 @@ def process_job(job: VideoJob, detector: VehicleDetector,
         with db.session() as s:
             s.query(VideoJob).filter(VideoJob.job_id == job.job_id).update(
                 {"status": "failed", "error_message": "Cannot open video",
-                 "completed_at": datetime.utcnow()}
+                 "completed_at": datetime.now(timezone.utc)}
             )
         return
 
@@ -40,7 +40,7 @@ def process_job(job: VideoJob, detector: VehicleDetector,
 
     tracker.reset()
     frame_idx = 0
-    batch_readings = []
+    batch_readings_data = []
 
     while True:
         ret, frame = cap.read()
@@ -50,35 +50,37 @@ def process_job(job: VideoJob, detector: VehicleDetector,
         tracks   = tracker.update(analysis.detections)
 
         if frame_idx % int(fps) == 0:
-            congestion = min(1.0, analysis.density / 0.05)
-            reading = TrafficReading(
-                intersection_id=job.intersection_id or "unknown",
-                camera_id=f"cam_{job.job_id[:8]}",
-                vehicle_count=analysis.vehicle_count,
-                density=analysis.density,
-                queue_length=detector.compute_queue_length(analysis.detections),
-                congestion_level=congestion,
-            )
-            batch_readings.append(reading)
+            density = analysis.density
+            congestion = min(1.0, density / 0.08)
+            batch_readings_data.append({
+                "intersection_id": job.intersection_id or "unknown",
+                "camera_id": f"cam_{job.job_id[:8]}",
+                "vehicle_count": analysis.vehicle_count,
+                "density": density,
+                "avg_speed": max(5.0, 60.0 - density * 400.0),
+                "queue_length": detector.compute_queue_length(analysis.detections),
+                "flow_rate": density * 20.0,
+                "congestion_level": congestion,
+            })
 
         frame_idx += 1
         if frame_idx % 300 == 0:
             with db.session() as s:
-                for r in batch_readings:
-                    s.add(r)
+                for rd in batch_readings_data:
+                    s.add(TrafficReading(**rd))
                 s.query(VideoJob).filter(VideoJob.job_id == job.job_id).update(
                     {"processed_frames": frame_idx}
                 )
-            batch_readings = []
+            batch_readings_data = []
             log.info(f"Job {job.job_id[:8]} – frame {frame_idx}/{total}")
 
     cap.release()
     with db.session() as s:
-        for r in batch_readings:
-            s.add(r)
+        for rd in batch_readings_data:
+            s.add(TrafficReading(**rd))
         s.query(VideoJob).filter(VideoJob.job_id == job.job_id).update(
             {"status": "done", "processed_frames": frame_idx,
-             "completed_at": datetime.utcnow()}
+             "completed_at": datetime.now(timezone.utc)}
         )
     log.info(f"Job {job.job_id[:8]} complete – {frame_idx} frames processed.")
 
@@ -99,6 +101,7 @@ def run_service():
     tracker  = MultiObjectTracker()
 
     while True:
+        job = None
         with db.session() as s:
             job = (
                 s.query(VideoJob)
@@ -118,7 +121,7 @@ def run_service():
                 with db.session() as s:
                     s.query(VideoJob).filter(VideoJob.job_id == job.job_id).update(
                         {"status": "failed", "error_message": str(e),
-                         "completed_at": datetime.utcnow()}
+                         "completed_at": datetime.now(timezone.utc)}
                     )
         else:
             time.sleep(5)

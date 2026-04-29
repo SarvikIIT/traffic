@@ -1,13 +1,9 @@
-"""Tests for vehicle detection and density estimation."""
-
 import numpy as np
 import pytest
 
 from src.detection.model import Detection, DetectionModel, VEHICLE_CLASS_IDS
 from src.detection.detector import VehicleDetector, FrameAnalysis
 
-
-# ─── Detection dataclass ─────────────────────────────────────────────────────
 
 def test_detection_center():
     det = Detection(bbox=(10, 20, 110, 70), confidence=0.9, class_id=2, class_name="car")
@@ -25,10 +21,7 @@ def test_detection_dimensions():
     assert det.height == 30.0
 
 
-# ─── Vehicle detector (no real model) ────────────────────────────────────────
-
 class MockDetectionModel:
-    """Fake model that returns 3 cars at fixed positions."""
 
     def predict(self, frame: np.ndarray):
         return [
@@ -71,17 +64,14 @@ def test_heatmap_shape(detector, sample_frame):
 
 
 def test_roi_filter():
-    """Detector with tight ROI should filter out out-of-region vehicles."""
     det = VehicleDetector(
         model=MockDetectionModel(),
         frame_width=640,
         frame_height=480,
-        roi=(0, 0, 100, 100),   # only top-left corner
+        roi=(0, 0, 100, 100),
     )
     frame = np.zeros((480, 640, 3), dtype=np.uint8)
     analysis = det.process_frame(frame)
-    # The first detection at (50,50)–(150,120) center=(100,85) is on the boundary
-    # others are outside
     assert analysis.vehicle_count <= 1
 
 
@@ -91,7 +81,6 @@ def test_queue_length_empty(detector):
 
 
 def test_queue_length_nonzero(detector):
-    # Vehicle center at y=240 (above stop_line_y=300) → queued, waiting
     dets = [Detection((100, 200, 200, 280), 0.9, 2, "car")]
     q = detector.compute_queue_length(dets, stop_line_y=300, frame_height=480)
     assert q > 0.0

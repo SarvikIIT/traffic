@@ -1,5 +1,3 @@
-"""Tests for traffic graph builder, dataset, and STGCN model."""
-
 import numpy as np
 import pytest
 import torch
@@ -9,14 +7,11 @@ from src.graph.dataset import TrafficGraphDataset
 from src.graph.prediction_model import STGCN, GraphConvLayer
 
 
-# ─── Graph builder ───────────────────────────────────────────────────────────
-
 def test_grid_city_nodes(grid_builder):
     assert grid_builder.num_nodes == 9
 
 
 def test_grid_city_edges(grid_builder):
-    # 3×3 grid: 12 horizontal + 12 vertical directed edges
     assert grid_builder.num_edges == 24
 
 
@@ -72,8 +67,6 @@ def test_congested_nodes(grid_builder):
     assert len(congested) == 3
 
 
-# ─── Dataset ─────────────────────────────────────────────────────────────────
-
 def test_synthetic_dataset_sizes():
     train, val, test = TrafficGraphDataset.generate_synthetic(
         num_nodes=9, timesteps=200, seq_len=6, pred_len=2
@@ -88,12 +81,10 @@ def test_dataset_getitem_shapes():
         num_nodes=9, timesteps=200, seq_len=6, pred_len=2
     )
     x, y, ei = train[0]
-    assert x.shape == (6, 9, 8)   # (seq_len, N, F)
-    assert y.shape == (2, 9)       # (pred_len, N)
+    assert x.shape == (6, 9, 8)
+    assert y.shape == (2, 9)
     assert ei.shape[0] == 2
 
-
-# ─── STGCN model ─────────────────────────────────────────────────────────────
 
 def test_graph_conv_forward():
     layer = GraphConvLayer(8, 16)
@@ -108,7 +99,7 @@ def test_stgcn_forward():
     pred_len = 3
     model = STGCN(num_nodes=N, in_channels=F, hidden_channels=32,
                   num_layers=2, pred_len=pred_len, seq_len=T_in)
-    x   = torch.randn(2, T_in, N, F)     # batch_size=2
+    x   = torch.randn(2, T_in, N, F)
     adj = torch.eye(N)
     out = model(x, adj)
     assert out.shape == (2, pred_len, N)

@@ -14,23 +14,34 @@ from src.utils.db import DatabaseManager, TrafficReading, SignalState, get_db
 from src.utils.logger import setup_logging, get_logger
 
 def build_observation(readings: list, env: TrafficSignalEnv) -> np.ndarray:
-    obs = env.observation_space.sample() * 0
+    obs = np.zeros(env.observation_space.shape, dtype=np.float32)
     if not readings:
         return obs
+
     r = readings[0]
     max_queue = 50.0
+    max_wait = 300.0
+
     q_estimate = min(r.density * 10, max_queue)
     obs[0] = q_estimate / max_queue
     obs[1] = q_estimate / max_queue
     obs[2] = q_estimate * 0.7 / max_queue
     obs[3] = q_estimate * 0.7 / max_queue
-    obs[4:8] = min(1.0, r.congestion_level)
+
+    wait_estimate = min(r.congestion_level * max_wait, max_wait)
+    obs[4] = wait_estimate / max_wait
+    obs[5] = wait_estimate / max_wait
+    obs[6] = wait_estimate * 0.7 / max_wait
+    obs[7] = wait_estimate * 0.7 / max_wait
+
     obs[8] = 1.0
+    obs[9] = 0.0
     obs[10] = 0.5
+
     ts = r.timestamp
     obs[11] = ts.hour / 24.0
     obs[12] = ts.weekday() / 7.0
-    return obs.astype(np.float32)
+    return obs
 
 def run_service():
     cfg = load_config()

@@ -91,11 +91,13 @@ class MultiObjectTracker:
         self._trackers: List[KalmanBoxTracker] = []
         self._class_map: Dict[int, Tuple[int, str]] = {}
         self._conf_map: Dict[int, float] = {}
+        self._trajectory_map: Dict[int, List[Tuple[float, float]]] = {}
 
     def reset(self) -> None:
         self._trackers.clear()
         self._class_map.clear()
         self._conf_map.clear()
+        self._trajectory_map.clear()
         KalmanBoxTracker._count = 0
 
     def update(self, detections: List[Detection]) -> List[Track]:
@@ -153,12 +155,21 @@ class MultiObjectTracker:
             active_trackers.append(t)
         self._trackers = active_trackers
 
+        active_ids = {t.id for t in self._trackers}
+        stale_ids = [tid for tid in self._trajectory_map if tid not in active_ids]
+        for tid in stale_ids:
+            del self._trajectory_map[tid]
+
         output: List[Track] = []
         for t in self._trackers:
             if t.hits < self.min_hits and t.time_since_update > 0:
                 continue
             cls_id, cls_name = self._class_map.get(t.id, (2, "car"))
             bbox = t.get_state()
+            center = ((bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2)
+            if t.id not in self._trajectory_map:
+                self._trajectory_map[t.id] = []
+            self._trajectory_map[t.id].append(center)
             tr = Track(
                 track_id=t.id,
                 bbox=bbox,
@@ -167,8 +178,8 @@ class MultiObjectTracker:
                 confidence=self._conf_map.get(t.id, 0.0),
                 age=t.age,
                 hits=t.hits,
+                trajectory=list(self._trajectory_map[t.id]),
             )
-            tr.trajectory.append(tr.center)
             output.append(tr)
         return output
 

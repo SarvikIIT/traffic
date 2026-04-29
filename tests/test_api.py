@@ -1,5 +1,3 @@
-"""Integration tests for the FastAPI REST API."""
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -12,17 +10,22 @@ def client(tmp_path_factory):
     tmp_path = tmp_path_factory.mktemp("db")
     db_url = f"sqlite:///{tmp_path}/test.db"
 
-    # Override startup to use test DB
     import services.api as api_module
     test_db = DatabaseManager(db_url)
     test_db.create_tables()
     api_module._db = test_db
 
+    from src.utils.config import load_config
+    from src.utils.logger import get_logger
+    try:
+        api_module._cfg = load_config()
+    except FileNotFoundError:
+        api_module._cfg = None
+    api_module._log = get_logger("api_test")
+
     with TestClient(app) as c:
         yield c
 
-
-# ─── Health ───────────────────────────────────────────────────────────────────
 
 def test_health_check(client):
     r = client.get("/api/v1/health")
@@ -31,8 +34,6 @@ def test_health_check(client):
     assert data["status"] == "healthy"
     assert "timestamp" in data
 
-
-# ─── Traffic density ─────────────────────────────────────────────────────────
 
 def test_update_reading(client):
     payload = {
@@ -51,7 +52,6 @@ def test_update_reading(client):
 
 
 def test_get_density_exists(client):
-    # First insert a reading
     client.post("/api/v1/traffic/update", json={
         "intersection_id": "INT_002",
         "vehicle_count": 5,
@@ -70,17 +70,12 @@ def test_get_density_missing(client):
     assert r.status_code == 404
 
 
-# ─── Predictions ─────────────────────────────────────────────────────────────
-
 def test_predict_no_data(client):
-    # Should return placeholder, not 500
     r = client.get("/api/v1/traffic/predict?intersection_id=INT_999&horizon=30")
     assert r.status_code == 200
     data = r.json()
     assert data["horizon_minutes"] == 30
 
-
-# ─── Network status ──────────────────────────────────────────────────────────
 
 def test_network_status(client):
     r = client.get("/api/v1/traffic/network")
@@ -89,8 +84,6 @@ def test_network_status(client):
     assert "total_intersections" in data
     assert "intersections" in data
 
-
-# ─── Signal optimization ─────────────────────────────────────────────────────
 
 def test_optimize_signals_empty_intersections(client):
     r = client.post("/api/v1/signals/optimize", json={
@@ -102,7 +95,6 @@ def test_optimize_signals_empty_intersections(client):
 
 
 def test_optimize_signals_with_data(client):
-    # Insert data for intersection
     client.post("/api/v1/traffic/update", json={
         "intersection_id": "INT_OPT",
         "vehicle_count": 20,
@@ -121,8 +113,6 @@ def test_optimize_signals_with_data(client):
     assert rec["green_duration"] >= 15
 
 
-# ─── Video jobs ───────────────────────────────────────────────────────────────
-
 def test_submit_video_job(client):
     r = client.post("/api/v1/jobs/video", json={
         "input_path": "/tmp/test_video.mp4",
@@ -132,11 +122,9 @@ def test_submit_video_job(client):
     data = r.json()
     assert "job_id" in data
     assert data["status"] == "pending"
-    return data["job_id"]
 
 
 def test_get_job_status(client):
-    # Submit job first
     r = client.post("/api/v1/jobs/video", json={"input_path": "/tmp/x.mp4"})
     job_id = r.json()["job_id"]
     r2 = client.get(f"/api/v1/jobs/{job_id}")

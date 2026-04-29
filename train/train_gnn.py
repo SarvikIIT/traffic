@@ -211,7 +211,7 @@ def main():
                 log.info(f"Early stopping at epoch {epoch} (best epoch {best_epoch})")
                 break
 
-    ckpt = torch.load(Path(args.output) / "stgcn_best.pt", map_location=device)
+    ckpt = torch.load(Path(args.output) / "stgcn_best.pt", map_location=device, weights_only=True)
     model.load_state_dict(ckpt["state_dict"])
     test_metrics = eval_epoch(model, test_loader, criterion, adj, device)
     log.info(

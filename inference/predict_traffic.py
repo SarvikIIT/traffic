@@ -92,18 +92,15 @@ def main():
         seq_len=args.seq_len,
         device=args.device,
     )
-    log.info(f"Loaded model from {args.model}")
-    import torch as _torch
-    _ckpt_args = _torch.load(args.model, map_location="cpu", weights_only=False).get("args", {})
-    pred_len = _ckpt_args.get("pred_len", pred_len)
+    pred_len = predictor.model.pred_len
     actual_horizon = pred_len * 5
-    log.info(f"Model pred_len={pred_len} ({actual_horizon} min horizon)")
+    log.info(f"Loaded model from {args.model} | pred_len={pred_len} ({actual_horizon} min horizon)")
 
     if not Path(args.features).exists():
         log.error(f"Feature file not found: {args.features}")
         sys.exit(1)
     feat = np.load(args.features)
-    seq_len = _ckpt_args.get("seq_len", args.seq_len)
+    seq_len = ckpt_args.get("seq_len", args.seq_len)
     window = feat[-seq_len:]
     x = torch.tensor(window, dtype=torch.float32)
 

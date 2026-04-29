@@ -1,21 +1,3 @@
-"""
-Traffic Digital Twin – Main Orchestration Entry Point.
-
-Starts all services as background threads / subprocesses:
-  1. FastAPI REST API
-  2. Video Processor (polls for job queue)
-  3. Traffic Predictor (periodic GNN inference)
-  4. Signal Optimizer (periodic RL-based timing)
-  5. Streamlit Dashboard
-
-Usage
------
-python main.py                      # start everything
-python main.py --services api       # only API
-python main.py --services api dashboard
-python main.py --config config/config.yaml
-"""
-
 import argparse
 import signal
 import subprocess
@@ -86,7 +68,6 @@ def main():
     log.info("  City-Scale Traffic Digital Twin")
     log.info("=" * 60)
 
-    # ── Pre-flight checks ────────────────────────────────────────────────────
     if args.init_db or args.seed_db:
         cmd = [sys.executable, "scripts/init_database.py"]
         if args.seed_db:
@@ -106,13 +87,11 @@ def main():
         else:
             log.info(f"Graph already exists: {graph_path}")
 
-    # ── Determine which services to start ────────────────────────────────────
     services = args.services
     if "all" in services:
         services = ALL_SERVICES
     log.info(f"Starting services: {services}")
 
-    # ── Launch services ──────────────────────────────────────────────────────
     procs = {}
     for svc in services:
         if svc not in COMMANDS:
@@ -135,21 +114,26 @@ def main():
     log.info("-" * 60)
     log.info("Press Ctrl+C to stop all services.")
 
-    # ── Graceful shutdown ────────────────────────────────────────────────────
     def shutdown(sig, frame):
         log.info("\nShutting down...")
         for name, proc in procs.items():
             log.info(f"  Stopping {name}...")
-            proc.terminate()
+            try:
+                proc.terminate()
+            except ProcessLookupError:
+                pass
         for name, proc in procs.items():
-            proc.wait(timeout=5)
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
         log.info("All services stopped.")
         sys.exit(0)
 
     signal.signal(signal.SIGINT,  shutdown)
-    signal.signal(signal.SIGTERM, shutdown)
+    if hasattr(signal, 'SIGTERM'):
+        signal.signal(signal.SIGTERM, shutdown)
 
-    # ── Health monitor ───────────────────────────────────────────────────────
     while True:
         time.sleep(10)
         for name, proc in list(procs.items()):

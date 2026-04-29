@@ -1,5 +1,3 @@
-"""Tests for the traffic signal RL environment."""
-
 import numpy as np
 import pytest
 import gymnasium as gym
@@ -7,8 +5,6 @@ import gymnasium as gym
 from src.rl.traffic_env import TrafficSignalEnv
 from src.rl.reward import IntersectionState, compute_reward
 
-
-# ─── Environment ─────────────────────────────────────────────────────────────
 
 @pytest.fixture
 def env():
@@ -21,7 +17,7 @@ def test_observation_space(env):
 
 
 def test_action_space(env):
-    assert env.action_space.n == 2  # 0=keep, 1=switch
+    assert env.action_space.n == 2
 
 
 def test_reset_returns_valid_obs(env):
@@ -57,7 +53,7 @@ def test_episode_terminates(env):
         steps += 1
         if steps > 10_000:
             pytest.fail("Episode did not terminate")
-    assert steps <= env.max_steps + 10  # small buffer for yellow transitions
+    assert steps <= env.max_steps + 10
 
 
 def test_info_keys(env):
@@ -69,14 +65,10 @@ def test_info_keys(env):
 
 
 def test_queue_increases_on_red(env):
-    """Vehicles should accumulate when all approaches are on red (not possible,
-    but queue should grow without green discharge)."""
     env.reset()
-    # Take several steps with phase=0 (NS green) and check EW approaches queue up
     for _ in range(10):
         env.step(0)
-    # EW queue (approaches 2,3) should have accumulated some vehicles
-    assert env._queue[2] + env._queue[3] >= 0  # at minimum non-negative
+    assert env._queue[2] + env._queue[3] >= 0
 
 
 def test_multiple_resets_independent(env):
@@ -86,8 +78,6 @@ def test_multiple_resets_independent(env):
     obs2, *_ = env.step(1)
     np.testing.assert_array_almost_equal(obs1, obs2)
 
-
-# ─── Reward functions ────────────────────────────────────────────────────────
 
 def make_state(queues, waits, phase=0):
     return IntersectionState(
@@ -104,14 +94,14 @@ def test_reward_wait_time_reduction_improves():
     prev = make_state([10, 10, 5, 5], [20, 20, 10, 10])
     curr = make_state([5, 5, 5, 5],   [10, 10, 10, 10])
     r = compute_reward(curr, prev, mode="wait_time_reduction")
-    assert r > 0  # wait times decreased → positive reward
+    assert r > 0
 
 
 def test_reward_wait_time_reduction_worsens():
     prev = make_state([5, 5, 5, 5],   [10, 10, 10, 10])
     curr = make_state([10, 10, 5, 5], [20, 20, 10, 10])
     r = compute_reward(curr, prev, mode="wait_time_reduction")
-    assert r < 0  # wait times increased → negative reward
+    assert r < 0
 
 
 def test_reward_composite_valid():

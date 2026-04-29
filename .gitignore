@@ -81,3 +81,12 @@ Thumbs.db
 *.tmp
 temp/
 tmp/
+
+# Claude Code
+.claude/
+
+# Reports / generated docs
+report/
+
+# Dataset (large, shared separately)
+data/DelhiTrafficDensityDataset/

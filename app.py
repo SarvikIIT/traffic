@@ -1,15 +1,3 @@
-"""
-Traffic Digital Twin – Quick Start Entry Point.
-
-This file provides a convenient shortcut to launch the system.
-For full control, use main.py.
-
-Usage
------
-python app.py               # launch API + dashboard
-python app.py --demo        # initialise with demo data and launch
-"""
-
 import subprocess
 import sys
 

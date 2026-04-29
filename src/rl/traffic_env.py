@@ -161,7 +161,6 @@ class TrafficSignalEnv(gym.Env):
 
     def _do_yellow_transition(self) -> None:
         self._elapsed += self.yellow_time
-        self._step_count += 1
 
     def _arrival_rate(self, approach: int) -> float:
         base = self.arrival_rates[approach]
