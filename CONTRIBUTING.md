@@ -14,7 +14,7 @@ Thank you for your interest in contributing! This document provides guidelines f
 ### Reporting Bugs
 
 Before submitting a bug report:
-1. Check if the issue already exists in [Issues](https://github.com/yourusername/traffic-digital-twin/issues)
+1. Check if the issue already exists in [Issues](https://github.com/SarvikIIT/traffic-digital-twin/issues)
 2. Verify the bug with the latest version
 3. Collect relevant information (OS, Python version, GPU details, error logs)
 
@@ -36,7 +36,7 @@ Feature requests should:
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/yourusername/traffic-digital-twin.git
+   git clone https://github.com/SarvikIIT/traffic-digital-twin.git
    cd traffic-digital-twin
    ```
 
@@ -144,7 +144,7 @@ Good areas for contributions:
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/yourusername/traffic-digital-twin/discussions)
+- Open a [Discussion](https://github.com/SarvikIIT/traffic-digital-twin/discussions)
 - Check existing documentation in [docs/](docs/)
 - Reach out to maintainers
 

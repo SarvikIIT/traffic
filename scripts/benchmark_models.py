@@ -32,7 +32,7 @@ def parse_args():
     parser.add_argument("--yolo-max-frames", type=int, default=200)
     parser.add_argument("--seq-len", type=int, default=12)
     parser.add_argument("--pred-len", type=int, default=3)
-    parser.add_argument("--output", type=str, default="report/benchmark_results.json")
+    parser.add_argument("--output", type=str, default="results/benchmark_results.json")
     parser.add_argument("--config", type=str, default="config/config.yaml")
     parser.add_argument("--device", type=str, default="auto")
     return parser.parse_args()

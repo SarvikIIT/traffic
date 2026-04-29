@@ -46,16 +46,12 @@ def get_db() -> "DatabaseManager":
     return st.session_state["db"]
 
 def generate_synthetic_readings(num_nodes: int = 9, steps: int = 60) -> Dict:
-    # Use current time to slowly shift the sine wave forward
-    progress = time.time() / 100.0  
+    progress = time.time() / 100.0
     t = np.arange(steps)
     base = 30 + 20 * np.sin((t / steps * 2 * np.pi) + progress)
     data = {}
-    
-    # Optional: ensure variation across nodes
     for i in range(num_nodes):
         noise = np.random.normal(0, 5, steps)
-        # Shift each node's phase slightly
         node_base = 30 + 20 * np.sin((t / steps * 2 * np.pi) + progress + (i * 0.5))
         data[f"INT_{i:02d}"] = np.clip(node_base + noise, 0, 100).tolist()
         
