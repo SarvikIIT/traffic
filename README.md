@@ -2,7 +2,7 @@
 
 A traffic management system for urban intersections that uses computer vision, graph neural networks, and reinforcement learning to build a digital twin of city traffic infrastructure. The system processes traffic video feeds, builds dynamic traffic flow models, and optimizes signal timings to reduce congestion.
 
-Built as a B.Tech project focused on the Varanasi Lanka area (Lanka Chowk → BHU Gate → Assi → Sigra corridor).
+Built as a Exploratory project focused on the Varanasi Lanka area (Lanka Chowk → BHU Gate → Assi → Sigra corridor).
 
 ## Overview
 
@@ -42,12 +42,6 @@ Traffic Cameras → YOLOv8 Detection → Kalman Tracker
 | Backend | SQLAlchemy, SQLite |
 | Dashboard | Streamlit, Plotly |
 
-## Dataset
-
-This project uses the **Delhi Traffic Density Dataset** (Oct–Dec 2023) — 40 CSV files with per-intersection vehicle count, density, and timestamp data. The dataset is shared separately (too large for GitHub).
-
-Kaggle: [Delhi Traffic Density Dataset](https://www.kaggle.com/datasets/diegolincoln/delhi-traffic-density-dataset)
-
 ## Installation
 
 ```bash
@@ -74,9 +68,6 @@ The fastest way to see everything running:
 # Initialise DB + generate a 3×3 grid graph + start API and dashboard
 python app.py --demo
 ```
-
-API: http://localhost:8000 | Dashboard: http://localhost:8501
-
 ## Usage
 
 ### Running the full pipeline
@@ -155,7 +146,7 @@ pytest tests/ -v
 pytest tests/ -v --cov=src --cov-report=html
 ```
 
-25 tests across API, graph, detection, and RL environment.
+25 tests across graph, detection, and RL environment.
 
 ## Project Structure
 
